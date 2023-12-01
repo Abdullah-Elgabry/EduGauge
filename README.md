@@ -7,5 +7,5 @@ This approach offers a more nuanced and accurate evaluation of student understan
 
 Target Audience:
 
-Professors and instructors in various academic disciplines.
-Students seeking an engaging and effective learning experience.
+-  Professors and instructors in various academic disciplines.
+-  Students seeking an engaging and effective learning experience.
