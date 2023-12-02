@@ -62,16 +62,20 @@ def doctorRegister():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        confirmPassword = request.form['confirmPassword']
 
         with myapp.app_context():
             existing_doctor = Doctor.query.filter_by(email=email).first()
 
         if existing_doctor is None:
-            new_doctor = Doctor(email=email, password=password)
-            db.session.add(new_doctor)
-            db.session.commit()
-            flash('Account is created successfully', 'success')
-            return redirect(url_for('doctorLogin'))
+            if password == confirmPassword:
+                new_doctor = Doctor(email=email, password=password)
+                db.session.add(new_doctor)
+                db.session.commit()
+                flash('Account is created successfully', 'success')
+                return redirect(url_for('doctorLogin'))
+            else:
+                flash("Password dosn't match" , 'danger')
         else:
             flash('Your Account already exists!','danger')
             return redirect(url_for('doctorLogin'))
@@ -119,16 +123,20 @@ def studentRegister():
         name = request.form['name']
         email = request.form['email']
         password = request.form['password']
+        confirmPassword = request.form['confirmPassword']
 
         with myapp.app_context():
             existing_user = Student.query.filter_by(email=email).first()
 
         if existing_user is None:
-            new_user = Student(name=name,email=email, password=password)
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Account is created successfully', 'success')
-            return redirect(url_for('studentLogin'))
+            if password == confirmPassword :
+                new_user = Student(name=name,email=email, password=password)
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Account is created successfully', 'success')
+                return redirect(url_for('studentLogin'))
+            else:
+                flash("Password doesn't match", 'danger')
         else:
             flash('Your Account already exists!','danger')
             return redirect(url_for('studentLogin'))
