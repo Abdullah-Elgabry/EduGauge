@@ -1,0 +1,11 @@
+.container .row div div{
+    text-align: center;
+    padding: 10px;
+    box-shadow: 0 0 7px 0 #eee;
+    border-radius: 12px;
+}
+
+.container div img{
+    width: 64px !important;
+    margin-bottom: 10px;
+}

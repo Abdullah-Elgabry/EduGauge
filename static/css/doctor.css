@@ -1,0 +1,43 @@
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 46%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    display: inline-block;
+    outline: #007bff;
+}
+
+input:focus{
+    outline: #007bff solid 1px;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.training-example{
+    display: flex;
+    gap: 20px;
+}
+
+.training-example > label{
+    width: 30%;
+    padding: 3px 0;
+}
+.training-example > input{
+    width: 50%;
+}
