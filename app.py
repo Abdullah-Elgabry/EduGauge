@@ -11,15 +11,46 @@ myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(myapp)
 
 class Student(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
+    answers = db.relationship('StudentAnswers', backref='student', lazy=True)
+    scores = db.relationship('Score', backref='student', lazy=True)
+
+class StudentAnswers(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    answer_text = db.Column(db.String(255), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False )
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'),nullable=False)
 
 class Doctor(db.Model):
-    id=db.Column(db.Integer, primary_key=True)
-    email=db.Column(db.String(255), nullable=False)
-    password=db.Column(db.String(255), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    courses = db.relationship('Course', backref='doctor', lazy=True)
+
+class Course(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), unique=True, nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    questions = db.relationship('Questions', backref='courses', lazy=True)
+    scores = db.relationship('Score', backref='courses', lazy=True)
+
+class Questions(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    question = db.Column(db.String(255), nullable=False)
+    answer = db.Column(db.String(255), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'), nullable=False)
+    answer_id = db.relationship('StudentAnswers', backref='questions', lazy=True)
+
+class Score(db.Model):
+    sore = db.Column(db.Integer, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True,nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('course.id'),primary_key=True, nullable=False )
+
+
 
 
 @myapp.route("/")
@@ -28,12 +59,32 @@ def index():
     return render_template('index.html', title="Home Page", activeIndex=activeindex, session=session)
 
 ##### start doctor ######
-@myapp.route("/doctor")
+@myapp.route("/doctor" , methods=['GET', 'POST'])
 def doctorIndex():
     if 'user_id' not in session:
     # If the doctor is not logged in, redirect to the login page
         return redirect(url_for('doctorLogin'))
     activeindex = "active"
+    with myapp.app_context():
+            courseId = Course.query.filter_by(doctor_id = session['user_id']  ).first()
+
+    if request.method == 'POST':
+        num_questions = int(request.form['num_examples'])
+        for i in range(1, num_questions+1):
+            question = request.form[f'train_input_{i}']
+            answer = request.form[f'train_output_{i}']
+
+            with myapp.app_context():
+                existing_question = Questions.query.filter(Questions.question==question, Questions.course_id==courseId.id).first()
+            
+            if existing_question is None:
+                newQuestion = Questions(question=question , answer=answer , course_id=courseId.id)
+                db.session.add(newQuestion)
+                db.session.commit()
+                flash("Questions are Uploaded Successfully",'success')
+            else:
+                flash(f"Question {i} has been uploaded",'danger')
+    
     return render_template('doctor/doctor.html', title="Home Page", activeIndex=activeindex, session=session)
 
 @myapp.route("/doctor/login", methods=['GET', 'POST'])
@@ -48,7 +99,7 @@ def doctorLogin():
 
         if doctor:
             session['user_id'] = doctor.id
-            session['doctor_name'] = doctor.email
+            session['doctor_name'] = doctor.name
             # flash('Loggin in successfully','success')
             return redirect(url_for('doctorIndex'))
         else:
@@ -60,6 +111,7 @@ def doctorLogin():
 def doctorRegister():
     activesign = "active"
     if request.method == 'POST':
+        name= request.form['name']
         email = request.form['email']
         password = request.form['password']
         confirmPassword = request.form['confirmPassword']
@@ -69,7 +121,7 @@ def doctorRegister():
 
         if existing_doctor is None:
             if password == confirmPassword:
-                new_doctor = Doctor(email=email, password=password)
+                new_doctor = Doctor(name=name,email=email, password=password)
                 db.session.add(new_doctor)
                 db.session.commit()
                 flash('Account is created successfully', 'success')
@@ -88,13 +140,18 @@ def doctorRegister():
 
 ##### Start Student ######
 
-@myapp.route("/student")
+@myapp.route("/student", methods=['GET', 'POST'])
 def studentIndex():
     if 'user_id' not in session:
-        # If the doctor is not logged in, redirect to the login page
+        # If the student is not logged in, redirect to the login page
         return redirect(url_for('studentLogin'))
     activeindex = "active"
-    return render_template('student/student.html', title="Home Page", activeIndex=activeindex, session=session)
+
+    with myapp.app_context():
+        existing_student = Student.query.filter_by(id = session['user_id']).first()
+        courses = Course.query.all()
+
+    return render_template('student/student.html', title="Home Page", activeIndex=activeindex, session=session,courses=courses )
 
 @myapp.route("/student/login", methods=['GET', 'POST'])
 def studentLogin():
@@ -144,9 +201,41 @@ def studentRegister():
     return render_template('student/signup.html', title='Sign up', activeSign=activesign)
 
 
-@myapp.route("/student/viewScore")
-def viewScore():
-    return render_template('student/viewScore.html' , title = 'Score')
+@myapp.route("/student/<int:stu_id>/viewScore")
+def viewScore(stu_id):
+    scores = Score.query.filter_by( student_id = stu_id ).all()
+    courses_names = []
+    for score in scores:
+        course = Course.query.get(score.course_id)
+        if course:
+            courses_names.append(course.name)
+    print(courses_names)
+    return render_template('student/viewScore.html' , title = 'Score' , scores=scores , courses=courses_names )
+
+@myapp.route('/course/<int:course_id>', methods=['GET','POST'])
+def course_details(course_id):
+    course = Course.query.get(course_id)
+    questions = Questions.query.filter(Questions.course_id==course.id)
+    unanswered_questions= []
+    answered_questions= []
+    answers = []
+    for question in questions:
+        existing_answer = StudentAnswers.query.filter( StudentAnswers.question_id==question.id, StudentAnswers.student_id == session['user_id'] ).first()
+        if existing_answer is None:
+            unanswered_questions.append(question)
+        else:
+            answers.append(existing_answer)
+            answered_questions.append(question)
+    
+
+
+    combined_data = zip(answered_questions, answers)
+    if course:
+        return render_template('student/course-details.html',title = course.name, course=course , unanswered_questions = unanswered_questions , combined_data = combined_data)
+    else:
+        flash("Course Not found !!!" , 'danger')
+        # return render_template('course_not_found.html')
+
 ##### End Student ######
 
 
