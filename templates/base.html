@@ -29,11 +29,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto ms-auto mb-2 mb-lg-0 mt-3 mt-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link p-2 p-lg-3{{' ' + activeIndex if activeIndex else '' }}" aria-current="page" href="/">Home</a>
-                    </li>
-                    
                     {% if 'user_id' not in session %}
+                        <li class="nav-item">
+                            <a class="nav-link p-2 p-lg-3{{' ' + activeIndex if activeIndex else '' }}" aria-current="page" href="/">Home</a>
+                        </li>
                         <li class="nav-item position-relative login">
                             <a class="nav-link p-2 p-lg-3{{' ' + activeLogin if activeLogin else '' }}" href="#">Login</a>
                             <ul class="dropdown-login">
@@ -53,7 +52,7 @@
 
                 {%if 'user_name' in session %}
                     <div class="p-2 m-0 user">
-                        Welcome {{ session['user_name'].split('@')[0] }} 
+                        Welcome {{ session['user_name'] }} 
                         <img class="arrow-dowm"
                         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAABfUlEQVR4nO3UIUhkURTG8aODooiyIMKCsIKwRbAYDCaDyWJxyyabZaPJbjJatm3aosViMpgMA7NFxhnevd937zoID0QQRRRFvcuwDgiKzDhv3nsD5wcnXjh/zuOJKKWUUkoppZRKFoANkiHPA2Cj2ZjNHEdsNX2VEEIPyZ9ZL83X8yuE0NvSJ1Z/QPJ3ji6xE0IotBTxIqYAYDvrCJK7pVKpT9pRLpf7Se5leIl97/2AJKFWqw2SPMgg5DCO4yFJkjFmBEAxxUsUq9XqsHSC9/4TyT8phBxVKpVR6SRjzBjJ4w5GGO/9Z0lDFEXj/C/piBPn3ISkieQXAH8TjDiNomhSsgDgK4A4gYgzY8yUZInkNMnzNv5OF9baGckDkrMkrz4Qcll/K3lirZ0DcN3CJW6stfOSRyQXANw2EXIHYFHyzFq7RPL+nUs8OOe+STcguVxf+I2IR5LfpZsAWHlevBHxBGBVuhHJH40Q59yadDOS6/XJeg+llFJKKUnfPwvK4eU+ec6GAAAAAElFTkSuQmCC">
                         <ul>
@@ -61,7 +60,7 @@
                                 <a class="nav-link p-2 p-lg-3" href="/student">Courses</a>
                             </li>
                             <li>
-                                <a class="nav-link p-2 p-lg-3" href="/student/viewScore">View Score</a>
+                                <a class="nav-link p-2 p-lg-3" href="{{url_for( 'viewScore' , stu_id = session['user_id'] )}}">View Score</a>
                             </li>
                             <li>
                                 <a class="nav-link p-2 p-lg-3" href="/logout">Log out</a>
@@ -71,10 +70,13 @@
                 {% endif %}
                 {%if 'doctor_name' in session %}
                     <div class="p-2 m-0 user">
-                        Welcome {{ session['doctor_name'].split('@')[0] }} 
+                        Welcome {{ session['doctor_name'] }} 
                         <img class="arrow-dowm"
                         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAABfUlEQVR4nO3UIUhkURTG8aODooiyIMKCsIKwRbAYDCaDyWJxyyabZaPJbjJatm3aosViMpgMA7NFxhnevd937zoID0QQRRRFvcuwDgiKzDhv3nsD5wcnXjh/zuOJKKWUUkoppZRKFoANkiHPA2Cj2ZjNHEdsNX2VEEIPyZ9ZL83X8yuE0NvSJ1Z/QPJ3ji6xE0IotBTxIqYAYDvrCJK7pVKpT9pRLpf7Se5leIl97/2AJKFWqw2SPMgg5DCO4yFJkjFmBEAxxUsUq9XqsHSC9/4TyT8phBxVKpVR6SRjzBjJ4w5GGO/9Z0lDFEXj/C/piBPn3ISkieQXAH8TjDiNomhSsgDgK4A4gYgzY8yUZInkNMnzNv5OF9baGckDkrMkrz4Qcll/K3lirZ0DcN3CJW6stfOSRyQXANw2EXIHYFHyzFq7RPL+nUs8OOe+STcguVxf+I2IR5LfpZsAWHlevBHxBGBVuhHJH40Q59yadDOS6/XJeg+llFJKKUnfPwvK4eU+ec6GAAAAAElFTkSuQmCC">
                         <ul>
+                            <li>
+                                <a class="nav-link p-2 p-lg-3" href="/doctor">Questions</a>
+                            </li>
                             <li>
                                 <a class="nav-link p-2 p-lg-3" href="/logout">Log out</a>
                             </li>

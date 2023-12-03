@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block link %}
+<link rel="stylesheet" href="{{ url_for('static' , filename='css/student.css') }}">
+{% endblock %}
+{% block body %}
+
+
+    {% if course %}
+    <div class="container">
+        <h3 class="mt-5 mb-5">{{course.name}}</h3>
+        {% if combined_data %}
+        <h4 class="mb-4 ans-click">
+            Answered Questions
+            <img class="arrow-dowm"
+                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAABfUlEQVR4nO3UIUhkURTG8aODooiyIMKCsIKwRbAYDCaDyWJxyyabZaPJbjJatm3aosViMpgMA7NFxhnevd937zoID0QQRRRFvcuwDgiKzDhv3nsD5wcnXjh/zuOJKKWUUkoppZRKFoANkiHPA2Cj2ZjNHEdsNX2VEEIPyZ9ZL83X8yuE0NvSJ1Z/QPJ3ji6xE0IotBTxIqYAYDvrCJK7pVKpT9pRLpf7Se5leIl97/2AJKFWqw2SPMgg5DCO4yFJkjFmBEAxxUsUq9XqsHSC9/4TyT8phBxVKpVR6SRjzBjJ4w5GGO/9Z0lDFEXj/C/piBPn3ISkieQXAH8TjDiNomhSsgDgK4A4gYgzY8yUZInkNMnzNv5OF9baGckDkrMkrz4Qcll/K3lirZ0DcN3CJW6stfOSRyQXANw2EXIHYFHyzFq7RPL+nUs8OOe+STcguVxf+I2IR5LfpZsAWHlevBHxBGBVuhHJH40Q59yadDOS6/XJeg+llFJKKUnfPwvK4eU+ec6GAAAAAElFTkSuQmCC">
+        </h4>
+        <div class="answered">
+            {% for question,answer in combined_data %}
+            <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
+            </label>
+            <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
+                placeholder="Enter Answer" readonly> {{answer.answer_text }} </textarea>
+            {% endfor %}
+            {% endif %}
+            <hr>
+        </div>
+            <form method="post" class="pt-5 pb-5">
+                {% if unanswered_questions %}
+                    {% for question in unanswered_questions %}
+                        <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
+                        </label>
+                        <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
+                            placeholder="Enter Answer" required></textarea>
+                    {% endfor %}
+                {% endif %}
+                <input type="submit" class="btn btn-primary" value="Sumbit">
+            </form>
+        {%  endif %}
+    </div>
+
+
+{% endblock %}
+
+
+
+
+{% block script %}
+<script>
+    let ansClick= document.querySelector('.ans-click')
+    ansClick.onclick = function(){
+        ansClick.children[0].classList.toggle("show")
+        document.querySelector(".answered").classList.toggle("show")
+    }
+</script>
+
+{% endblock %}

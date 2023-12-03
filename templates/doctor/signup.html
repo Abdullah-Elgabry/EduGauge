@@ -3,17 +3,31 @@
 <link rel="stylesheet" href="{{ url_for('static' , filename='css/signup.css') }}">
 {% endblock %}
 {% block body %}
+{% with messages=get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category,message in messages %}
+<div class="container pt-3">
+    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
 <div class="signup">
     <div class="container">
         <h3>Sign up</h3>
         <form method="post">
+            <label for="name">Name:</label>
+            <input class="form-control" id="name" type="text" name="name" placeholder="Enter your name" required><br>
             <label for="username">Email:</label>
             <input class="form-control" type="text" name="email" placeholder="name@email.com" required><br>
             <label for="password">Password:</label>
             <input class="form-control" type="password" name="password" placeholder="Password" required><br>
             <label for="password">Confirrm Password:</label>
-            <input class="form-control" type="password" placeholder="Password" required><br>
+            <input class="form-control" type="password" name="confirmPassword" placeholder="Password" required><br>
         
             <input class="btn btn-primary" type="submit" value="Create">
             <p class="mt-3 text-black-50">Have already account <a href="/doctor/login">Login</a> ?</p>
