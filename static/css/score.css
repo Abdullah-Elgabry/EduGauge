@@ -1,12 +1,18 @@
+.course{
+    box-shadow: 0 0 7px 0 #eee;
+    border-radius: 12px;
+}
+
+
 .single-chart {
-    width: 50px;
+    width: 60px;
     justify-content: space-around;
 }
 
 .circular-chart {
     display: block;
     margin: 10px auto;
-    max-width: 80%;
+    max-width: 100%;
     max-height: 250px;
 }
 

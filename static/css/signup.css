@@ -9,3 +9,12 @@ div.signup {
 div.signup h3{
     margin: 0 0 20px 0;
 }
+
+
+
+@media (min-width:320px) and (max-width:480px) {
+    div.signup {
+        width: 85%;
+        margin: 4rem auto;
+    }
+}

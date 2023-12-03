@@ -1,0 +1,22 @@
+textarea {
+    resize: none;
+}
+
+.ans-click{
+    cursor: pointer;
+}
+.ans-click img{
+    width: 22px;
+    display: none;
+    margin-bottom: 5px;
+}
+.ans-click img.show{
+    display: inline;
+}
+.answered{
+    display: none;
+}
+
+.answered.show{
+    display: block;
+}

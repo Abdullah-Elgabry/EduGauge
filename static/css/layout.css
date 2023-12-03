@@ -69,7 +69,7 @@ nav ul li a:hover{
 }
 .user .arrow-dowm{
     width: 20px !important;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 .user ul{
     background-color: #fff;
@@ -84,68 +84,31 @@ nav ul li a:hover{
     display: none;
     z-index: 5;
 }
+.user ul li a{
+    transition: 0.5s;
+}
+.user ul li:hover a{
+    padding-left: 28px !important;
+}
 .user ul.show{
     display: block;
 }
-footer{
-    background-image: url(../images/footer.jpg);
-    background-size: cover;
-    background-repeat:no-repeat;
-    background-position: center;
-    padding: 7rem 0;
-    position: relative;
-}
-footer h2{
-    font-weight:var(--font-weight-semibold)
-}
-footer::before{
-    content: '';
-    position: absolute;
-    top:0;
-    left:0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to top, var(--dark-color), transparent 200%);
-    z-index: 0;
-}
-footer .container{
-    position: relative;
-}
-footer .container .row div:nth-child(2){
-    padding-left: 3rem !important;
-}
 
-@media (max-width: 767px){
-    footer .container .row div:nth-child(2){
-    padding-left: 15px !important;
-}
-}
-footer .btn-direction{
-    background-color: #212529;
-    color:#AAA;
-    padding: 10px 35px;
-    border:0;
-    transition: 0.3s;
-    margin-top: 10px;
-    font-size:18px;
-}
-footer .btn-direction:hover{
-    background-color: #1c1f23;
-    color: #FFFFFF;
-    border: 0;
-}
-footer ul li a svg{
-    font-size: 25px;
-    color: var(--p-color);
-}
-footer li:hover svg{
-    color: white;
-}
-footer h4{
-    margin-bottom: 25px;
-    font-weight:600
-}
-footer p{
-    color:#AAA;
-    font-size:18px
+@media (min-width:320px) and (max-width:480px){
+    .dropdown-login,
+    .dropdown-register {
+        padding: 5px;
+        position: relative;
+        top: 0;
+        left: 0;
+        transform: none;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .user ul {
+        position: relative;
+        top: 0;
+        left: 0;
+        box-shadow: none;
+    }
 }
