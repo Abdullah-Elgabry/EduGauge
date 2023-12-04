@@ -28,6 +28,14 @@
             <input class="form-control" type="password" name="password" placeholder="Password" required><br>
             <label for="password">Confirrm Password:</label>
             <input class="form-control" type="password" name="confirmPassword" placeholder="Password" required><br>
+            <select name="course_list" id="course_list" class="form-control">
+                <option value="" selected>--- Select Course ---</option>
+                {% if courses %}
+                {% for c in courses %}
+                <option value="{{c.name}}"> {{c.name}} </option>
+                {% endfor %}
+                {% endif %}
+            </select><br>
         
             <input class="btn btn-primary" type="submit" value="Create">
             <p class="mt-3 text-black-50">Have already account <a href="/doctor/login">Login</a> ?</p>

@@ -18,7 +18,9 @@
 {% endwith %}
 
 <div class="container">
-    <h3 class="mt-5 mb-5">Doctor Page</h3>
+    {% if course %}
+    <h3 class="mt-5 mb-5">Doctor Page - {{course.name}}</h3>
+    {% endif %}
     <div class="container">    
         <form method="post" action="">
             <label for="num_examples">Number of Questions:</label>

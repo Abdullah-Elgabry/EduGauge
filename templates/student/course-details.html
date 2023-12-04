@@ -4,6 +4,19 @@
 {% endblock %}
 {% block body %}
 
+    {% with messages=get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category,message in messages %}
+    <div class="container pt-3">
+        <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+            <strong>{{message}}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
 
     {% if course %}
     <div class="container">
@@ -25,7 +38,7 @@
         </div>
         {% endif %}
 
-            <form method="post" class="pt-5 pb-5">
+            <form method="post" action="{{url_for('course_details', course_id=course.id)}}" class="pt-5 pb-5">
                 {% if unanswered_questions %}
                     {% for question in unanswered_questions %}
                         <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
@@ -33,7 +46,7 @@
                         <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
                             placeholder="Enter Answer" required></textarea>
                     {% endfor %}
-                    <input type="submit" class="btn btn-primary" value="Sumbit">
+                    <input type="submit" class="btn btn-primary" value="Submit">
                 {% endif %}
             </form>
     </div>

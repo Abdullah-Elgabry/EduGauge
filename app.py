@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session,flash
 from flask_sqlalchemy import SQLAlchemy
-
+from sqlalchemy import text
 myapp = Flask(__name__)
 myapp.secret_key = 'your_secret_key'
 
@@ -34,7 +34,7 @@ class Doctor(db.Model):
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), unique=True, nullable=False)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'), nullable=False)
+    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
     questions = db.relationship('Questions', backref='courses', lazy=True)
     scores = db.relationship('Score', backref='courses', lazy=True)
 
@@ -81,11 +81,11 @@ def doctorIndex():
                 newQuestion = Questions(question=question , answer=answer , course_id=courseId.id)
                 db.session.add(newQuestion)
                 db.session.commit()
-                flash("Questions are Uploaded Successfully",'success')
             else:
-                flash(f"Question {i} has been uploaded",'danger')
+                flash(f"Question {i} hasn't been uploaded",'danger')
+        flash(f"Questions are Uploaded Successfully to {courseId.name}",'success')
     
-    return render_template('doctor/doctor.html', title="Home Page", activeIndex=activeindex, session=session)
+    return render_template('doctor/doctor.html', title="Home Page", activeIndex=activeindex, session=session , course = courseId)
 
 @myapp.route("/doctor/login", methods=['GET', 'POST'])
 def doctorLogin():
@@ -110,29 +110,53 @@ def doctorLogin():
 @myapp.route("/doctor/register", methods=['GET', 'POST'])
 def doctorRegister():
     activesign = "active"
+    # courses = Course.query.all()
+    courses = Course.query.filter_by(doctor_id=None).all()
     if request.method == 'POST':
         name= request.form['name']
         email = request.form['email']
         password = request.form['password']
         confirmPassword = request.form['confirmPassword']
+        selected_option = request.form.get('course_list')
 
         with myapp.app_context():
             existing_doctor = Doctor.query.filter_by(email=email).first()
-
         if existing_doctor is None:
             if password == confirmPassword:
-                new_doctor = Doctor(name=name,email=email, password=password)
-                db.session.add(new_doctor)
-                db.session.commit()
-                flash('Account is created successfully', 'success')
-                return redirect(url_for('doctorLogin'))
+                    new_doctor = Doctor(name=name, email=email, password=password)
+                    db.session.add(new_doctor)
+                    db.session.commit()
             else:
                 flash("Password dosn't match" , 'danger')
+
+            existing_course = Course.query.filter_by(name=selected_option).first()
+            existing_course.doctor_id = new_doctor.id
+            db.session.add(existing_course)
+            db.session.commit()
+
+            flash('Your Account is created successfully!','success')
+            return redirect(url_for('doctorLogin'))
+
         else:
             flash('Your Account already exists!','danger')
             return redirect(url_for('doctorLogin'))
 
-    return render_template('doctor/signup.html', title='Sign up', activeSign=activesign)
+    return render_template('doctor/signup.html', title='Sign up', activeSign=activesign, courses = courses)
+
+@myapp.route("/doctor/scores", methods=['GET'])
+def studentScores():
+    course = Course.query.filter_by( doctor_id = session['user_id'] ).first()
+    scores = Score.query.filter_by( course_id = course.id ).all()
+    students = []
+    
+    for score in scores:
+        student = Student.query.filter_by( id = score.student_id ).first()
+        students.append(student)
+
+    combined_data = zip(students , scores)
+
+    return render_template( 'doctor/student-scores.html' , combined_data = combined_data , course = course )
+
 
 ##### end doctor ######
 
@@ -219,6 +243,8 @@ def course_details(course_id):
     unanswered_questions= []
     answered_questions= []
     answers = []
+    combined_data = None
+
     for question in questions:
         existing_answer = StudentAnswers.query.filter( StudentAnswers.question_id==question.id, StudentAnswers.student_id == session['user_id'] ).first()
         if existing_answer is None:
@@ -226,10 +252,18 @@ def course_details(course_id):
         else:
             answers.append(existing_answer)
             answered_questions.append(question)
-    
 
+    if answers and answered_questions:
+        combined_data = zip(answered_questions, answers)
 
-    combined_data = zip(answered_questions, answers)
+    if request.method == "POST":
+        for i,question in enumerate(unanswered_questions):
+            new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id']  )
+            db.session.add(new_answer)
+            db.session.commit()
+        flash('Your Answers are submitted successfully', 'success')
+        return redirect( url_for( 'course_details', course_id=course_id ) )
+
     if course:
         return render_template('student/course-details.html',title = course.name, course=course , unanswered_questions = unanswered_questions , combined_data = combined_data)
     else:
@@ -237,6 +271,20 @@ def course_details(course_id):
         # return render_template('course_not_found.html')
 
 ##### End Student ######
+
+
+# @myapp.route('/courses', methods=["GET" , "POST"])
+# def courseList():
+#     courses = Course.query.all()
+#     existing_course = Course.query.filter_by(name = 'Web Development').first()
+#     selected_option= ''
+#     if request.method == "POST":
+#         selected_option = request.form.get('course_list')
+#         existing_course.doctor_id = 4
+#         db.session.add(existing_course)
+#         db.session.commit()
+
+    # return render_template("courses.html", courses = courses , selected = selected_option)
 
 
 @myapp.route('/logout')

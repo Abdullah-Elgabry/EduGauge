@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block link %}
+<link rel="stylesheet" href="{{ url_for('static' , filename='css/index.css') }}">
+{% endblock %}
+{% block body %}
+
+<div class="container">
+    <form class="form pt-5 pb-5" method="post">
+        <select name="course_list" id="course_list" class="form-control">
+            <option value="" selected>--- Select Course ---</option>
+            {% if courses %}
+            {% for c in courses %}
+            <option value="{{c.name}}"> {{c.name}} </option>
+            {% endfor %}
+            {% endif %}
+        </select><br>
+
+        <input class="btn btn-primary" type="submit" value="Submit">
+    </form>
+
+    {% if selected %}
+        <div>
+            {{selected}}
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

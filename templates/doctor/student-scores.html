@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block link %}
+<link rel="stylesheet" href="{{ url_for('static' , filename='css/index.css') }}">
+{% endblock %}
+{% block body %}
+
+
+
+<div class="pt-5 pb-5">
+    <div class="container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">First</th>
+                    {% if course %}
+                        <th scope="col">{{course.name}}</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if combined_data %}
+                    {% for student,score in combined_data %}
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>{{student.name}}</td>
+                            <td>{{score.sore}}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
