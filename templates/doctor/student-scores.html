@@ -8,29 +8,58 @@
 
 <div class="pt-5 pb-5">
     <div class="container">
+        {% if combined_data %}
+        <button type="button" class="btn btn-primary d-block ms-auto mb-4" id="btnExport" data-kt-menu-trigger="click"
+            data-kt-menu-placement="bottom-end" style="padding: 9px;">Export Student Scores
+        </button>
+        {% endif %}
         <table class="table">
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">First</th>
+                    <th scope="col">Name</th>
                     {% if course %}
                         <th scope="col">{{course.name}}</th>
                     {% endif %}
                 </tr>
             </thead>
             <tbody>
-                {% if combined_data %}
                     {% for student,score in combined_data %}
                         <tr>
-                            <th scope="row">1</th>
+                            <th scope="row">{{loop.index}}</th>
                             <td>{{student.name}}</td>
                             <td>{{score.sore}}</td>
                         </tr>
                     {% endfor %}
-                {% endif %}
             </tbody>
         </table>
     </div>
 </div>
 
+{% endblock %}
+
+
+
+
+
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.3.js" integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
+    crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#btnExport").click(function () {
+            let table = document.getElementsByTagName("table");
+            console.log(table);
+            debugger;
+            TableToExcel.convert(table[0], {
+                name: `{{course.name}} Scores.xlsx`,
+                sheet: {
+                    name: '{{course.name}} Scores'
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

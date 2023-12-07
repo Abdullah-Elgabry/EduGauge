@@ -28,13 +28,6 @@ body{
 nav{
     box-shadow: 0 0 7px 0 #eee;
 }
-nav .button{
-    flex-basis:100%
-}
-nav .reserv{
-    padding: 10px 35px;
-    font-size: 18px;
-}
 nav ul li a{
     color: var(--p-color) !important;
 }
@@ -43,6 +36,9 @@ nav ul li a:hover{
 }
 .active{
     color:var(--primary-color) !important;
+}
+.login,.register{
+    position: relative;
 }
 .dropdown-login,.dropdown-register{
     background-color: #fff;

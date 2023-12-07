@@ -1,8 +1,28 @@
 from flask import Flask, render_template, request, redirect, url_for, session,flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+import google.generativeai as genai
 myapp = Flask(__name__)
 myapp.secret_key = 'your_secret_key'
+
+genai.configure(api_key="AIzaSyAKnWwc0R1eamUpSTTT_LKkB34E9K-Yl90")
+
+defaults = {
+    'model': 'models/text-bison-001',
+    'temperature': 0.7,
+    'candidate_count': 1,
+    'top_k': 40,
+    'top_p': 0.95,
+    'max_output_tokens': 1024,
+    'stop_sequences': [],
+    'safety_settings': [
+        {"category": "HARM_CATEGORY_DEROGATORY", "threshold": 1},
+        {"category": "HARM_CATEGORY_TOXICITY", "threshold": 1},
+        {"category": "HARM_CATEGORY_VIOLENCE", "threshold": 2},
+        {"category": "HARM_CATEGORY_SEXUAL", "threshold": 2},
+        {"category": "HARM_CATEGORY_MEDICAL", "threshold": 2},
+        {"category": "HARM_CATEGORY_DANGEROUS", "threshold": 2},
+    ],
+}
 
 # Update the database URI to use SQLite
 myapp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
@@ -148,12 +168,13 @@ def studentScores():
     course = Course.query.filter_by( doctor_id = session['user_id'] ).first()
     scores = Score.query.filter_by( course_id = course.id ).all()
     students = []
-    
+    combined_data = ""
     for score in scores:
         student = Student.query.filter_by( id = score.student_id ).first()
         students.append(student)
 
-    combined_data = zip(students , scores)
+    if students and scores:
+        combined_data = zip(students , scores)
 
     return render_template( 'doctor/student-scores.html' , combined_data = combined_data , course = course )
 
@@ -172,7 +193,6 @@ def studentIndex():
     activeindex = "active"
 
     with myapp.app_context():
-        existing_student = Student.query.filter_by(id = session['user_id']).first()
         courses = Course.query.all()
 
     return render_template('student/student.html', title="Home Page", activeIndex=activeindex, session=session,courses=courses )
@@ -238,59 +258,82 @@ def viewScore(stu_id):
 
 @myapp.route('/course/<int:course_id>', methods=['GET','POST'])
 def course_details(course_id):
-    course = Course.query.get(course_id)
-    questions = Questions.query.filter(Questions.course_id==course.id)
     unanswered_questions= []
     answered_questions= []
     answers = []
     combined_data = None
+    score = 0
 
-    for question in questions:
-        existing_answer = StudentAnswers.query.filter( StudentAnswers.question_id==question.id, StudentAnswers.student_id == session['user_id'] ).first()
-        if existing_answer is None:
-            unanswered_questions.append(question)
-        else:
-            answers.append(existing_answer)
-            answered_questions.append(question)
+    course = Course.query.get(course_id)
+    
+    if course:
+        questions = Questions.query.filter(Questions.course_id==course.id)
+
+        for question in questions:
+            existing_answer = StudentAnswers.query.filter( StudentAnswers.question_id==question.id, StudentAnswers.student_id == session['user_id'] ).first()
+            if existing_answer is None:
+                unanswered_questions.append(question)
+            else:
+                answers.append(existing_answer)
+                answered_questions.append(question)
 
     if answers and answered_questions:
         combined_data = zip(answered_questions, answers)
 
+    with myapp.app_context():
+        stu_score = Score.query.filter_by( student_id = session['user_id'] , course_id = course_id ).first()
+
+
     if request.method == "POST":
         for i,question in enumerate(unanswered_questions):
+            student_answer = request.form[f'question_{i+1}']
+            doctor_answer = question.answer
             new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id']  )
             db.session.add(new_answer)
             db.session.commit()
+            score += compare(doctor_answer,student_answer)
+            if  i == len(unanswered_questions) - 1 :
+                total_score = int((score /   ((i+1)*2)  ) * 100 )
+
+                if stu_score is None:
+                    new_score = Score( sore = total_score, student_id = session['user_id'] , course_id = course_id )
+                    db.session.add(new_score)
+                    db.session.commit()
+                else:
+                    stu_score.sore = (total_score + stu_score.sore) / 2
+                    db.session.add(stu_score)
+                    db.session.commit()
         flash('Your Answers are submitted successfully', 'success')
         return redirect( url_for( 'course_details', course_id=course_id ) )
 
     if course:
-        return render_template('student/course-details.html',title = course.name, course=course , unanswered_questions = unanswered_questions , combined_data = combined_data)
+        return render_template('student/course-details.html',course=course , unanswered_questions = unanswered_questions , combined_data = combined_data , score = stu_score)
     else:
-        flash("Course Not found !!!" , 'danger')
-        # return render_template('course_not_found.html')
+        return ('Error 404 Course Not Found')
+
+
+
+def compare(doc_ans ,stu_ans) -> int:
+    prompt = f"Text 1: {doc_ans}\nText 2: {stu_ans} two text has the same meaning:\n"
+    response = genai.generate_text(
+        **defaults,
+        prompt=prompt
+    )
+    if response.result:
+        similarity_text = response.result.lower()
+        if 'yes' in similarity_text:
+            return 2
+        else:
+            return 0
 
 ##### End Student ######
 
-
-# @myapp.route('/courses', methods=["GET" , "POST"])
-# def courseList():
-#     courses = Course.query.all()
-#     existing_course = Course.query.filter_by(name = 'Web Development').first()
-#     selected_option= ''
-#     if request.method == "POST":
-#         selected_option = request.form.get('course_list')
-#         existing_course.doctor_id = 4
-#         db.session.add(existing_course)
-#         db.session.commit()
-
-    # return render_template("courses.html", courses = courses , selected = selected_option)
 
 
 @myapp.route('/logout')
 def logout():
     session.pop('user_id', None)
-    session.pop('user_name', None)
+    session.pop('user_name', None) 
     if (session.get('doctor_name')):
         session.pop('doctor_name',None)
     return redirect(url_for('index'))
