@@ -19,7 +19,7 @@
     </head>
 </head>
 
-<body>
+<body onload="startTimer()">
     <nav class="navbar navbar-expand-lg p-2 bg-white">
         <div class="container">
             <a class="navbar-brand" href="#"><strong>Platform</strong></a>
@@ -122,6 +122,35 @@
         let userClick = document.querySelector('.user')
         userClick.onclick = function(){
             userClick.children[1].classList.toggle('show')
+        }
+    </script>
+    <script>
+        // Set the countdown time in seconds
+        var countdownTime = 30; // 5 minutes in this example
+
+        function startTimer() {
+            var timer = setInterval(function () {
+                countdownTime--;
+
+                if(document.getElementById('timer')){
+                    document.getElementById('timer').innerText = formatTime(countdownTime);
+                    if (countdownTime <= 0) {
+                        clearInterval(timer);
+                        //alert('Time is up! Your answers will be submitted.');
+                        submitForm(); // Call the function to submit the form
+                    }
+                }
+            }, 1000);
+        }
+
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var remainingSeconds = seconds % 60;
+            return minutes + ':' + (remainingSeconds < 10 ? '0' : '') + remainingSeconds;
+        }
+
+        function submitForm() {
+            document.getElementById('examForm').submit();
         }
     </script>
     {% block script %}

@@ -43,6 +43,8 @@ class StudentAnswers(db.Model):
     answer_text = db.Column(db.String(255), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False )
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'),nullable=False)
+    result = db.Column(db.String(6), nullable=False)
+
 
 class Doctor(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -69,7 +71,6 @@ class Score(db.Model):
     sore = db.Column(db.Integer, nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True,nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey('course.id'),primary_key=True, nullable=False )
-
 
 
 
@@ -256,13 +257,14 @@ def viewScore(stu_id):
     print(courses_names)
     return render_template('student/viewScore.html' , title = 'Score' , scores=scores , courses=courses_names )
 
+
+unanswered_questions= [] 
 @myapp.route('/course/<int:course_id>', methods=['GET','POST'])
 def course_details(course_id):
-    unanswered_questions= []
-    answered_questions= []
+    unanswered_questions.clear()
+    answered_questions = []
     answers = []
     combined_data = None
-    score = 0
 
     course = Course.query.get(course_id)
     
@@ -283,35 +285,41 @@ def course_details(course_id):
     with myapp.app_context():
         stu_score = Score.query.filter_by( student_id = session['user_id'] , course_id = course_id ).first()
 
-
-    if request.method == "POST":
-        for i,question in enumerate(unanswered_questions):
-            student_answer = request.form[f'question_{i+1}']
-            doctor_answer = question.answer
-            new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id']  )
-            db.session.add(new_answer)
-            db.session.commit()
-            score += compare(doctor_answer,student_answer)
-            if  i == len(unanswered_questions) - 1 :
-                total_score = int((score /   ((i+1)*2)  ) * 100 )
-
-                if stu_score is None:
-                    new_score = Score( sore = total_score, student_id = session['user_id'] , course_id = course_id )
-                    db.session.add(new_score)
-                    db.session.commit()
-                else:
-                    stu_score.sore = (total_score + stu_score.sore) / 2
-                    db.session.add(stu_score)
-                    db.session.commit()
-        flash('Your Answers are submitted successfully', 'success')
-        return redirect( url_for( 'course_details', course_id=course_id ) )
-
     if course:
         return render_template('student/course-details.html',course=course , unanswered_questions = unanswered_questions , combined_data = combined_data , score = stu_score)
     else:
         return ('Error 404 Course Not Found')
 
-
+@myapp.route('/course/exam/<int:course_id>', methods=['GET','POST'] )
+def exam(course_id):
+        score = 0
+        course = Course.query.get(course_id)
+        if request.method == "POST":
+            for i,question in enumerate(unanswered_questions):
+                student_answer = request.form[f'question_{i+1}']
+                doctor_answer = question.answer
+                s_compare = compare(doctor_answer,student_answer)
+                if s_compare == 2:
+                    new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id'], result='true'  )
+                else:
+                    new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id'], result= 'false' )
+                db.session.add(new_answer)
+                db.session.commit()
+                score += s_compare
+                if  i == len(unanswered_questions) - 1 :
+                    total_score = int((score /   ((i+1)*2)  ) * 100 )
+                    stu_score = Score.query.filter_by( student_id = session['user_id'] , course_id = course_id ).first()
+                    if stu_score is None:
+                        new_score = Score( sore = total_score, student_id = session['user_id'] , course_id = course_id )
+                        db.session.add(new_score)
+                        db.session.commit()
+                    else:
+                        stu_score.sore = (total_score + stu_score.sore) / 2
+                        db.session.add(stu_score)
+                        db.session.commit()
+            flash('Your Answers are submitted successfully', 'success')
+            return redirect( url_for( 'course_details', course_id=course_id ) )
+        return render_template( 'student/exam.html', course=course,unanswered_questions = unanswered_questions)
 
 def compare(doc_ans ,stu_ans) -> int:
     prompt = f"Text 1: {doc_ans}\nText 2: {stu_ans} two text has the same meaning:\n"
@@ -325,6 +333,7 @@ def compare(doc_ans ,stu_ans) -> int:
             return 2
         else:
             return 0
+
 
 ##### End Student ######
 

@@ -1,33 +1,16 @@
 textarea {
     resize: none;
 }
-
-.ans-click{
-    cursor: pointer;
+textarea.true{
+    border: 3px solid rgb(25,135,84);
 }
-.ans-click img{
-    width: 22px;
-    display: none;
-    margin-bottom: 5px;
+textarea.false{
+    border: 3px solid rgb(220,53,69);
 }
-.ans-click img.show{
-    display: inline;
-}
-.answered{
-    display: none;
-}
-
-.answered.show{
-    display: block;
-}
-
-
 .course {
     box-shadow: 0 0 7px 0 #eee;
     border-radius: 12px;
 }
-
-
 .single-chart {
     width: 80px;
     /* justify-content: space-around; */

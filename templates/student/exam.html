@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block link %}
+<link rel="stylesheet" href="{{ url_for('static' , filename='css/exam.css') }}">
+{% endblock %}
+{% block body %}
+
+{% with messages=get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category,message in messages %}
+<div class="container pt-3">
+    <div class="alert alert-{{category}} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+<div class="container mt-5">
+    {% if unanswered_questions %}
+    <h4>Time: <span id="timer"></span></h4>
+    <form id="examForm" method="post" class="pt-5 pb-5">
+        {% for question in unanswered_questions %}
+        <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} -
+                {{question.question}}</strong>
+        </label>
+        <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
+            placeholder="Enter Answer" required></textarea>
+        {% endfor %}
+        <input type="submit" class="btn btn-primary" value="Submit">
+    
+    </form>
+    {% endif %}
+</div>
+
+
+{% endblock %}
+
+
+{% block script %}
+{% endblock %}

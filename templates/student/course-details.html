@@ -17,7 +17,6 @@
     {% endif %}
     {% endwith %}
 
-
     {% if course %}
     <div class="container">
         <div class="d-flex justify-content-between align-items-center">
@@ -36,51 +35,34 @@
                 </div>
             {% endif %}
         </div>
+
+
+        {% if unanswered_questions %}
+        <div class="container mt-3 mb-5">
+            <a href="{{url_for('exam' , course_id = course.id )}}" class="btn btn-success"> Start Exam </a>
+            <div class="mt-3">
+                <p>Questions: {{ unanswered_questions|length }} Questions</p>
+                <p>Duration: 15 min</p>
+            </div>
+        </div>
+        {% endif %}
+
+
         {% if combined_data %}
         <h4 class="mb-4 ans-click">
             Answered Questions
-            <img class="arrow-dowm"
-                src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAABfUlEQVR4nO3UIUhkURTG8aODooiyIMKCsIKwRbAYDCaDyWJxyyabZaPJbjJatm3aosViMpgMA7NFxhnevd937zoID0QQRRRFvcuwDgiKzDhv3nsD5wcnXjh/zuOJKKWUUkoppZRKFoANkiHPA2Cj2ZjNHEdsNX2VEEIPyZ9ZL83X8yuE0NvSJ1Z/QPJ3ji6xE0IotBTxIqYAYDvrCJK7pVKpT9pRLpf7Se5leIl97/2AJKFWqw2SPMgg5DCO4yFJkjFmBEAxxUsUq9XqsHSC9/4TyT8phBxVKpVR6SRjzBjJ4w5GGO/9Z0lDFEXj/C/piBPn3ISkieQXAH8TjDiNomhSsgDgK4A4gYgzY8yUZInkNMnzNv5OF9baGckDkrMkrz4Qcll/K3lirZ0DcN3CJW6stfOSRyQXANw2EXIHYFHyzFq7RPL+nUs8OOe+STcguVxf+I2IR5LfpZsAWHlevBHxBGBVuhHJH40Q59yadDOS6/XJeg+llFJKKUnfPwvK4eU+ec6GAAAAAElFTkSuQmCC">
         </h4>
         <div class="answered">
                 {% for question,answer in combined_data %}
                 <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
                 </label>
-                <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
+                <textarea class="form-control mb-3 {{answer.result}}" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
                     placeholder="Enter Answer" readonly> {{answer.answer_text }} </textarea>
                 {% endfor %}
-                <hr>
         </div>
         {% endif %}
-
-            {% if unanswered_questions %}
-                <form method="post" action="{{url_for('course_details', course_id=course.id)}}" class="pt-5 pb-5">
-                        {% for question in unanswered_questions %}
-                            <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
-                            </label>
-                            <textarea class="form-control mb-3" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
-                                placeholder="Enter Answer" required></textarea>
-                        {% endfor %}
-                        <input type="submit" class="btn btn-primary" value="Submit">
-                    
-                </form>
-            {% endif %}
     </div>
     {% endif %}
 
-
-{% endblock %}
-
-
-
-
-{% block script %}
-<script>
-    let ansClick= document.querySelector('.ans-click')
-    ansClick.onclick = function(){
-        ansClick.children[0].classList.toggle("show")
-        document.querySelector(".answered").classList.toggle("show")
-    }
-</script>
 
 {% endblock %}
