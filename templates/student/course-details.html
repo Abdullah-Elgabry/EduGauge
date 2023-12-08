@@ -54,15 +54,34 @@
         </h4>
         <div class="answered">
                 {% for question,answer in combined_data %}
-                <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> <strong> {{loop.index}} - {{question.question}}</strong>
+                <label for="question_{{loop.index}}" class="mb-2 ps-2" for=""> 
+                    <strong> {{loop.index}} - {{question.question}}</strong>
                 </label>
-                <textarea class="form-control mb-3 {{answer.result}}" name="question_{{loop.index}}" id="question_{{loop.index}}" cols="30" rows="4"
-                    placeholder="Enter Answer" readonly> {{answer.answer_text }} </textarea>
+                <div class="position-relative">
+                    {% if answer.result == "false" %}
+                    <button class="btn btn-success mb-3 show-ans"> Show Correct Answer </button>
+                    <textarea class="form-control mb-3 correct-ans" name="" id="" cols="30" rows="4" readonly> {{question.answer }} </textarea>
+                    {% endif %}
+                    <textarea class="form-control mb-3 {{answer.result}}" name="question_{{loop.index}}" id="question_{{loop.index}}"
+                        cols="30" rows="4" placeholder="Enter Answer" readonly> {{answer.answer_text }} </textarea>
+                </div>
                 {% endfor %}
         </div>
         {% endif %}
     </div>
     {% endif %}
 
+
+{% endblock %}
+
+
+{% block script %}
+
+    <script>
+        let showAnswer = document.querySelector(".show-ans")
+        showAnswer.onclick = function(){
+            document.querySelector(".correct-ans").classList.toggle("show")
+        }
+    </script>
 
 {% endblock %}
