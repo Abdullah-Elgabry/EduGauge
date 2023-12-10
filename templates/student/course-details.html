@@ -78,10 +78,14 @@
 {% block script %}
 
     <script>
-        let showAnswer = document.querySelector(".show-ans")
-        showAnswer.onclick = function(){
-            document.querySelector(".correct-ans").classList.toggle("show")
-        }
+        let showAnswers = Array.from(document.querySelectorAll(".show-ans"))
+        let textBoxes = document.querySelectorAll(".correct-ans")
+        showAnswers.forEach( btn =>{
+            btn.onclick = function(){
+                let index = showAnswers.indexOf(btn)
+                textBoxes[index].classList.toggle("show")
+            }
+        } )
     </script>
 
 {% endblock %}

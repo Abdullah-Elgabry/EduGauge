@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session,fl
 from flask_sqlalchemy import SQLAlchemy
 import google.generativeai as genai
 myapp = Flask(__name__)
-myapp.secret_key = 'your_secret_key'
+myapp.secret_key = 'xgxhfjhjk'
 
 genai.configure(api_key="AIzaSyAKnWwc0R1eamUpSTTT_LKkB34E9K-Yl90")
 
@@ -24,7 +24,6 @@ defaults = {
     ],
 }
 
-# Update the database URI to use SQLite
 myapp.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 myapp.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -79,11 +78,9 @@ def index():
     activeindex = "active"
     return render_template('index.html', title="Home Page", activeIndex=activeindex, session=session)
 
-##### start doctor ######
 @myapp.route("/doctor" , methods=['GET', 'POST'])
 def doctorIndex():
     if 'user_id' not in session:
-    # If the doctor is not logged in, redirect to the login page
         return redirect(url_for('doctorLogin'))
     activeindex = "active"
     with myapp.app_context():
@@ -104,9 +101,13 @@ def doctorIndex():
                 db.session.commit()
             else:
                 flash(f"Question {i} hasn't been uploaded",'danger')
+
         flash(f"Questions are Uploaded Successfully to {courseId.name}",'success')
     
-    return render_template('doctor/doctor.html', title="Home Page", activeIndex=activeindex, session=session , course = courseId)
+    return render_template('doctor/doctor.html', title="Doctor Page", activeIndex=activeindex, session=session , course = courseId)
+
+
+
 
 @myapp.route("/doctor/login", methods=['GET', 'POST'])
 def doctorLogin():
@@ -121,17 +122,17 @@ def doctorLogin():
         if doctor:
             session['user_id'] = doctor.id
             session['doctor_name'] = doctor.name
-            # flash('Loggin in successfully','success')
             return redirect(url_for('doctorIndex'))
         else:
             flash('Invalid username or password.','danger')
 
     return render_template('doctor/login.html', title="Login", activeLogin=activelogin)
 
+
+
 @myapp.route("/doctor/register", methods=['GET', 'POST'])
 def doctorRegister():
     activesign = "active"
-    # courses = Course.query.all()
     courses = Course.query.filter_by(doctor_id=None).all()
     if request.method == 'POST':
         name= request.form['name']
@@ -164,6 +165,8 @@ def doctorRegister():
 
     return render_template('doctor/signup.html', title='Sign up', activeSign=activesign, courses = courses)
 
+
+
 @myapp.route("/doctor/scores", methods=['GET'])
 def studentScores():
     course = Course.query.filter_by( doctor_id = session['user_id'] ).first()
@@ -180,16 +183,13 @@ def studentScores():
     return render_template( 'doctor/student-scores.html' , combined_data = combined_data , course = course )
 
 
-##### end doctor ######
 
 
 
-##### Start Student ######
 
 @myapp.route("/student", methods=['GET', 'POST'])
 def studentIndex():
     if 'user_id' not in session:
-        # If the student is not logged in, redirect to the login page
         return redirect(url_for('studentLogin'))
     activeindex = "active"
 
@@ -211,7 +211,6 @@ def studentLogin():
         if user:
             session['user_id'] = user.id
             session['user_name'] = user.name
-            # flash('Loggin in successfully','success')
             return redirect(url_for('studentIndex'))
         else:
             flash('Invalid username or password.','danger')
@@ -239,6 +238,8 @@ def studentRegister():
                 return redirect(url_for('studentLogin'))
             else:
                 flash("Password doesn't match", 'danger')
+
+
         else:
             flash('Your Account already exists!','danger')
             return redirect(url_for('studentLogin'))
@@ -305,7 +306,11 @@ def exam(course_id):
                     new_answer = StudentAnswers( answer_text=request.form[f'question_{i+1}']  , question_id = question.id , student_id = session['user_id'], result= 'false' )
                 db.session.add(new_answer)
                 db.session.commit()
+
+                
                 score += s_compare
+
+
                 if  i == len(unanswered_questions) - 1 :
                     total_score = int((score /   ((i+1)*2)  ) * 100 )
                     stu_score = Score.query.filter_by( student_id = session['user_id'] , course_id = course_id ).first()
@@ -319,6 +324,8 @@ def exam(course_id):
                         db.session.commit()
             flash('Your Answers are submitted successfully', 'success')
             return redirect( url_for( 'course_details', course_id=course_id ) )
+        
+        
         return render_template( 'student/exam.html', course=course,unanswered_questions = unanswered_questions)
 
 def compare(doc_ans ,stu_ans) -> int:
@@ -334,8 +341,6 @@ def compare(doc_ans ,stu_ans) -> int:
         else:
             return 0
 
-
-##### End Student ######
 
 
 
